@@ -1,44 +1,26 @@
-package com.fazzimart.entity;
+package com.fazzimart.model;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false, length = 100)
     private String name;
-
-    @Column(nullable = false, length = 20)
     private String phone;
-
-    @Column(nullable = false, unique = true, length = 100)
     private String email;
-
-    @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false, length = 20)
     private String role = "USER";
+    private String createdAt;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    public User() {
+    }
 
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = LocalDateTime.now();
+    public User(Long id, String name, String phone, String email, String password, String role, String createdAt) {
+        this.id = id;
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -89,11 +71,11 @@ public class User {
         this.role = role;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 }

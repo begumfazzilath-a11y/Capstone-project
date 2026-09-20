@@ -3,7 +3,7 @@
    Load this file on every page BEFORE the page script.
    ============================================================ */
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = 'http://localhost:9090/api';
 
 const TOKEN_KEY = 'fazzi_token';
 const USER_KEY = 'fazzi_user';

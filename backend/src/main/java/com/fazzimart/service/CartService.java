@@ -3,99 +3,43 @@ package com.fazzimart.service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.fazzimart.dao.CartDao;
+import com.fazzimart.dao.ProductDao;
 import com.fazzimart.dto.AddToCartRequest;
 import com.fazzimart.dto.CartItemDTO;
 import com.fazzimart.dto.CartResponse;
 import com.fazzimart.dto.UpdateCartRequest;
-import com.fazzimart.entity.CartItem;
-import com.fazzimart.entity.Product;
-import com.fazzimart.entity.User;
 import com.fazzimart.exception.ApiException;
-import com.fazzimart.repository.CartItemRepository;
-import com.fazzimart.repository.ProductRepository;
+import com.fazzimart.model.CartItem;
+import com.fazzimart.model.Product;
+import com.fazzimart.model.User;
 
 @Service
 public class CartService {
 
-    private final CartItemRepository cartItemRepository;
-    private final ProductRepository productRepository;
+    private final CartDao cartDao;
+    private final ProductDao productDao;
 
-    public CartService(CartItemRepository cartItemRepository, ProductRepository productRepository) {
-        this.cartItemRepository = cartItemRepository;
-        this.productRepository = productRepository;
+    public CartService(CartDao cartDao, ProductDao productDao) {
+        this.cartDao = cartDao;
+        this.productDao = productDao;
     }
 
-    @Transactional(readOnly = true)
     public CartResponse getCart(User user) {
-        return buildCartResponse(user.getId());
-    }
-
-    @Transactional
-    public CartResponse addToCart(User user, AddToCartRequest request) {
-        Product product = productRepository.findById(request.productId())
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Product not found"));
-
-        Optional<CartItem> existing = cartItemRepository.findByUserIdAndProductId(user.getId(), product.getId());
-        int newQuantity = request.quantity();
-        if (existing.isPresent()) {
-            newQuantity = existing.get().getQuantity() + request.quantity();
-        }
-        if (newQuantity > product.getStock()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST,
-                    "Only " + product.getStock() + " units of \"" + product.getName() + "\" available");
-        }
-
-        if (existing.isPresent()) {
-            existing.get().setQuantity(newQuantity);
-            cartItemRepository.save(existing.get());
-        } else {
-            cartItemRepository.save(new CartItem(user, product, request.quantity()));
-        }
-        return buildCartResponse(user.getId());
-    }
-
-    @Transactional
-    public CartResponse updateCart(User user, Long productId, UpdateCartRequest request) {
-        CartItem item = cartItemRepository.findByUserIdAndProductId(user.getId(), productId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Item not found in cart"));
-
-        Product product = item.getProduct();
-        if (request.quantity() > product.getStock()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST,
-                    "Only " + product.getStock() + " units of \"" + product.getName() + "\" available");
-        }
-        item.setQuantity(request.quantity());
-        cartItemRepository.save(item);
-        return buildCartResponse(user.getId());
-    }
-
-    @Transactional
-    public CartResponse removeFromCart(User user, Long productId) {
-        CartItem item = cartItemRepository.findByUserIdAndProductId(user.getId(), productId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Item not found in cart"));
-        cartItemRepository.delete(item);
-        return buildCartResponse(user.getId());
-    }
-
-    @Transactional
-    public void clearCart(Long userId) {
-        cartItemRepository.deleteByUserId(userId);
-    }
-
-    private CartResponse buildCartResponse(Long userId) {
-        List<CartItem> cartItems = cartItemRepository.findByUserIdOrderByIdAsc(userId);
+        List<CartItem> cartItems = cartDao.findByUserId(user.getId());
         List<CartItemDTO> dtos = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
         int itemCount = 0;
 
         for (CartItem item : cartItems) {
-            Product p = item.getProduct();
+            Product p = productDao.findById(item.getProductId());
+            if (p == null) {
+                continue;
+            }
             BigDecimal subtotal = p.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
             total = total.add(subtotal);
             itemCount += item.getQuantity();
@@ -111,5 +55,54 @@ public class CartService {
                     p.getStock()));
         }
         return new CartResponse(dtos, total, itemCount);
+    }
+
+    public CartResponse addToCart(User user, AddToCartRequest request) {
+        Product product = productDao.findById(request.productId());
+        if (product == null) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+
+        CartItem existing = cartDao.findByUserIdAndProductId(user.getId(), product.getId());
+        int newQuantity = request.quantity();
+        if (existing != null) {
+            newQuantity = existing.getQuantity() + request.quantity();
+        }
+        if (newQuantity > product.getStock()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Only " + product.getStock() + " units of \"" + product.getName() + "\" available");
+        }
+
+        cartDao.addOrUpdate(user.getId(), product.getId(), newQuantity);
+        return getCart(user);
+    }
+
+    public CartResponse updateCart(User user, Long productId, UpdateCartRequest request) {
+        CartItem item = cartDao.findByUserIdAndProductId(user.getId(), productId);
+        if (item == null) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Item not found in cart");
+        }
+
+        Product product = productDao.findById(productId);
+        if (product != null && request.quantity() > product.getStock()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Only " + product.getStock() + " units of \"" + product.getName() + "\" available");
+        }
+
+        cartDao.setQuantity(user.getId(), productId, request.quantity());
+        return getCart(user);
+    }
+
+    public CartResponse removeFromCart(User user, Long productId) {
+        CartItem item = cartDao.findByUserIdAndProductId(user.getId(), productId);
+        if (item == null) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Item not found in cart");
+        }
+        cartDao.remove(user.getId(), productId);
+        return getCart(user);
+    }
+
+    public void clearCart(Long userId) {
+        cartDao.clear(userId);
     }
 }

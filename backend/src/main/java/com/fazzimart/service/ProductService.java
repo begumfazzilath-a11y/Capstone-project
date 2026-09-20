@@ -6,22 +6,22 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.fazzimart.dao.ProductDao;
 import com.fazzimart.dto.ProductDTO;
-import com.fazzimart.entity.Product;
 import com.fazzimart.exception.ApiException;
-import com.fazzimart.repository.ProductRepository;
+import com.fazzimart.model.Product;
 
 @Service
 public class ProductService {
 
-    private final ProductRepository productRepository;
+    private final ProductDao productDao;
 
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public ProductService(ProductDao productDao) {
+        this.productDao = productDao;
     }
 
     public List<ProductDTO> searchProducts(String category, String sort, String query) {
-        List<Product> products = productRepository.findAll();
+        List<Product> products = productDao.findAll();
 
         if (query != null && !query.isBlank()) {
             String q = query.trim().toLowerCase();
@@ -46,7 +46,7 @@ public class ProductService {
     }
 
     public List<ProductDTO> getFeaturedProducts() {
-        return productRepository.findAll().stream()
+        return productDao.findAll().stream()
                 .sorted(Comparator.comparing(Product::getRating).reversed())
                 .limit(8)
                 .map(ProductDTO::from)
@@ -54,31 +54,37 @@ public class ProductService {
     }
 
     public ProductDTO getProduct(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Product not found"));
+        Product product = productDao.findById(id);
+        if (product == null) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Product not found");
+        }
         return ProductDTO.from(product);
     }
 
     public ProductDTO createProduct(ProductDTO dto) {
-        if (productRepository.existsByName(dto.name().trim())) {
+        if (productDao.existsByName(dto.name().trim())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "A product with this name already exists");
         }
         Product product = new Product();
         applyDto(product, dto);
-        return ProductDTO.from(productRepository.save(product));
+        return ProductDTO.from(productDao.save(product));
     }
 
     public ProductDTO updateProduct(Long id, ProductDTO dto) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Product not found"));
+        Product product = productDao.findById(id);
+        if (product == null) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Product not found");
+        }
         applyDto(product, dto);
-        return ProductDTO.from(productRepository.save(product));
+        return ProductDTO.from(productDao.update(product));
     }
 
     public void deleteProduct(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Product not found"));
-        productRepository.delete(product);
+        Product product = productDao.findById(id);
+        if (product == null) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+        productDao.delete(id);
     }
 
     private void applyDto(Product product, ProductDTO dto) {

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fazzimart.dto.UserDTO;
-import com.fazzimart.entity.User;
+import com.fazzimart.model.User;
 
 @RestController
 @RequestMapping("/api/users")

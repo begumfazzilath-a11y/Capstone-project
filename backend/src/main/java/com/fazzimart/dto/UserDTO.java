@@ -1,6 +1,6 @@
 package com.fazzimart.dto;
 
-import com.fazzimart.entity.User;
+import com.fazzimart.model.User;
 
 public record UserDTO(Long id, String name, String phone, String email, String role) {
 

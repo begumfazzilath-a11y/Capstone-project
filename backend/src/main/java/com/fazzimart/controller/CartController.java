@@ -16,7 +16,7 @@ import com.fazzimart.dto.AddToCartRequest;
 import com.fazzimart.dto.CartResponse;
 import com.fazzimart.dto.MessageResponse;
 import com.fazzimart.dto.UpdateCartRequest;
-import com.fazzimart.entity.User;
+import com.fazzimart.model.User;
 import com.fazzimart.service.CartService;
 
 import jakarta.validation.Valid;

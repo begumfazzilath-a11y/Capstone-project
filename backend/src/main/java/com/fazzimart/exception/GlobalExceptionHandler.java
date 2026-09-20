@@ -1,6 +1,5 @@
 package com.fazzimart.exception;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -26,11 +25,6 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .orElse("Validation failed");
         return ResponseEntity.badRequest().body(new MessageResponse(message));
-    }
-
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<MessageResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
-        return ResponseEntity.badRequest().body(new MessageResponse("Invalid data or duplicate entry"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

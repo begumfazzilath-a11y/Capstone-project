@@ -2,7 +2,7 @@ package com.fazzimart.dto;
 
 import java.math.BigDecimal;
 
-import com.fazzimart.entity.Product;
+import com.fazzimart.model.Product;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;

@@ -7,9 +7,9 @@ FAZZI MART is a complete full-stack online pet shop (college capstone project).
 | Layer     | Technology |
 |-----------|------------|
 | Frontend  | HTML5, CSS3, JavaScript, Bootstrap 5 |
-| Backend   | Java 17, Spring Boot 3.x (Web, Data JPA, Security) |
+| Backend   | Java 17, Spring Boot 3.x (Web, Security) |
 | Build     | Maven |
-| Database  | MySQL 8 |
+| Storage   | Excel (.xlsx) files via Apache POI — no database needed |
 | Auth      | JWT + BCrypt |
 
 ---
@@ -33,8 +33,6 @@ FAZZI MART is a complete full-stack online pet shop (college capstone project).
 ```
 fazzi capstone/
 ├── README.md
-├── database/
-│   └── fazzi_mart.sql                      # MySQL schema + sample data (optional)
 ├── backend/                                # Spring Boot REST API
 │   ├── pom.xml
 │   └── src/main/
@@ -47,11 +45,12 @@ fazzi capstone/
 │           │   └── DataSeeder.java         # Seeds admin + 16 products
 │           ├── controller/                 # Auth, Product, Cart, Order, User
 │           ├── dto/                        # Register/Login/Product/Cart/Order DTOs
-│           ├── entity/                     # User, Product, Order, OrderItem, CartItem
+│           ├── dao/                        # Excel DAOs (User, Product, Cart, Order)
 │           ├── exception/                  # ApiException + global handler
-│           ├── repository/                 # Spring Data JPA repositories
+│           ├── model/                      # User, Product, Order, OrderItem, CartItem
 │           ├── security/                   # JwtTokenProvider + JwtAuthenticationFilter
-│           └── service/                    # Auth, Product, Cart, Order services
+│           ├── service/                    # Auth, Product, Cart, Order services
+│           └── util/ExcelUtil.java         # Apache POI .xlsx read/write helpers
 └── frontend/                               # Static frontend
     ├── index.html                          # LOGIN (first page)
     ├── register.html
@@ -66,6 +65,20 @@ fazzi capstone/
     └── images/  (SVG product placeholders)
 ```
 
+All data is stored in Excel files created automatically in:
+`<user home>/fazzimart-data/`
+
+| File            | Contains                          |
+|-----------------|-----------------------------------|
+| `users.xlsx`    | Accounts (BCrypt-hashed passwords)|
+| `products.xlsx` | Catalogue (16 seeded products)    |
+| `cart_items.xlsx`| Shopping carts                  |
+| `orders.xlsx`   | Customer orders                   |
+| `order_items.xlsx`| Items inside each order         |
+
+> To use a different data folder, set the system property `fazzi.data.dir`
+> or the environment variable `FAZZIMART_DATA_DIR`.
+
 ---
 
 ## 🛠 VS Code Setup (Step by Step)
@@ -75,8 +88,9 @@ Install on the machine where it will run:
 
 1. **Java JDK 17** — https://adoptium.net
 2. **Maven 3.8+** — https://maven.apache.org (or use the bundled Maven in VS Code)
-3. **MySQL 8** — https://dev.mysql.com/downloads/installer/
-4. **VS Code** — https://code.visualstudio.com
+3. **VS Code** — https://code.visualstudio.com
+
+> No database is required. All data lives in Excel files.
 
 ### 1. Install VS Code Extensions
 Open VS Code → Extensions (Ctrl+Shift+X) and install:
@@ -84,18 +98,7 @@ Open VS Code → Extensions (Ctrl+Shift+X) and install:
 - **Maven for Java** (vscjava.vscode-maven)
 - **Live Server** (ritwickdey.liveserver)
 
-### 2. Create the MySQL Database
-Option A (recommended) — import the SQL file:
-```
-mysql -u root -p < database/fazzi_mart.sql
-```
-Option B — just start MySQL; the backend auto-creates the `fazzi_mart`
-database and tables (`createDatabaseIfNotExist=true`, `ddl-auto=update`).
-
-> ⚠️ If your MySQL `root` password is different, edit it in
-> `backend/src/main/resources/application.properties`.
-
-### 3. Run the Backend (Spring Boot)
+### 2. Run the Backend (Spring Boot)
 1. In VS Code: **File → Open Folder** → select the `backend` folder.
 2. Wait for Maven to finish downloading dependencies (bottom-right progress).
 3. Open `FazziMartApplication.java` and press **Run** (▶) — or use the
@@ -104,9 +107,10 @@ database and tables (`createDatabaseIfNotExist=true`, `ddl-auto=update`).
    cd backend
    mvn spring-boot:run
    ```
-4. Backend runs at **http://localhost:8080** (embedded Tomcat — it does NOT
+4. Backend runs at **http://localhost:9090** (embedded Tomcat — it does NOT
    need an external Tomcat server).
-   - First launch seeds the **admin user** and **16 sample products**.
+   - First launch creates the Excel data files and seeds the **admin user**
+     and **16 sample products**.
 
 ### 4. Run the Frontend
 1. In VS Code: **File → Open Folder** → select the `frontend` folder.
@@ -162,9 +166,9 @@ Pet Toys: Rubber Ball, Rope Toy, Squeaky Duck, Catnip Mouse
 
 | Problem | Fix |
 |---------|-----|
-| `Communications link failure` | MySQL is not running — start the MySQL service |
-| `Access denied for user 'root'` | Fix username/password in `application.properties` |
-| Frontend can't reach backend | Backend must be running on port 8080 (CORS is already enabled) |
-| Port 8080 in use | Change `server.port` in `application.properties` and update `API_BASE` in `frontend/js/common.js` |
+| `fazzi-mart-data` folder doesn't exist | It is created automatically on first launch |
+| Frontend can't reach backend | Backend must be running on port 9090 (CORS is already enabled) |
+| Port 9090 in use | Change `server.port` in `application.properties` and update `API_BASE` in `frontend/js/common.js` |
 | 401 on cart/checkout | You must be logged in first |
+| Excel data files getting torn | Run only one backend instance at a time (files are locked per request) |
 | Product images not showing | Open the frontend via Live Server (not just double-clicking the HTML) |

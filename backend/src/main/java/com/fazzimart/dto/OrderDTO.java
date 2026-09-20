@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fazzimart.entity.Order;
-import com.fazzimart.entity.OrderItem;
+import com.fazzimart.model.Order;
+import com.fazzimart.model.OrderItem;
 
 public record OrderDTO(
         Long id,
