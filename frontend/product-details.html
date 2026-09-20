@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | FAZZI MART</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="navbar"></div>
+
+    <main>
+        <div class="container py-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb" id="breadcrumbs">
+                    <li class="breadcrumb-item"><a href="home.html" class="text-fm">Home</a></li>
+                    <li class="breadcrumb-item"><a href="products.html" class="text-fm">Products</a></li>
+                    <li class="breadcrumb-item active" id="crumbProduct">Details</li>
+                </ol>
+            </nav>
+
+            <div id="productDetail">
+                <div class="spinner-wrap">Loading product...</div>
+            </div>
+        </div>
+
+        <!-- Related products -->
+        <section class="pb-5">
+            <div class="container">
+                <h3 class="section-title mb-4">You May Also Like</h3>
+                <div class="row g-3" id="relatedProducts"></div>
+            </div>
+        </section>
+    </main>
+
+    <div id="pageFooter"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/product-details.js"></script>
+</body>
+</html>
