@@ -1,7 +1,60 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#36d1dc"/><stop offset="1" stop-color="#5b86e5"/></linearGradient></defs>
-  <rect width="400" height="400" fill="url(#g)"/>
-  <circle cx="200" cy="180" r="110" fill="rgba(255,255,255,0.18)"/>
-  <text x="200" y="215" font-size="120" text-anchor="middle" dominant-baseline="central">🧼</text>
-  <text x="200" y="345" font-size="28" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-weight="bold">Grooming Brush</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eef0fb"/>
+      <stop offset="1" stop-color="#cdd3f1"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8a05a"/>
+      <stop offset="1" stop-color="#b8722f"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <rect x="44" y="44" width="312" height="312" rx="34" fill="#ffffff" opacity="0.5"/>
+  <ellipse cx="134" cy="330" rx="70" ry="14" fill="#5a4a8a" opacity="0.18"/>
+  <ellipse cx="274" cy="330" rx="62" ry="13" fill="#5a4a8a" opacity="0.18"/>
+  <g>
+    <rect x="88" y="210" width="96" height="52" rx="26" fill="url(#wood)"/>
+    <rect x="72" y="236" width="128" height="76" rx="24" fill="#4a5f8a"/>
+    <rect x="72" y="236" width="128" height="56" rx="24" fill="#5d74a6"/>
+    <rect x="72" y="286" width="128" height="26" rx="13" fill="#3f5278"/>
+    <rect x="88" y="210" width="96" height="52" rx="26" fill="url(#wood)"/>
+    <path d="M104 232 v12 M136 226 v12 M160 226 v12 M104 256 v12" stroke="#8a5420" stroke-width="3" stroke-linecap="round"/>
+    <g fill="#3a3f5c">
+      <ellipse cx="112" cy="234" rx="3" ry="5" transform="rotate(10 112 234)"/>
+      <ellipse cx="128" cy="234" rx="3" ry="5" transform="rotate(-8 128 234)"/>
+      <ellipse cx="144" cy="234" rx="3" ry="5" transform="rotate(12 144 234)"/>
+      <ellipse cx="160" cy="234" rx="3" ry="5" transform="rotate(-10 160 234)"/>
+    </g>
+  </g>
+  <g>
+    <rect x="222" y="246" width="118" height="58" rx="20" fill="url(#wood)"/>
+    <rect x="226" y="240" width="110" height="52" rx="18" fill="#6d86bd"/>
+    <g fill="#8fa3cf">
+      <circle cx="281" cy="256" r="4"/>
+      <circle cx="294" cy="262" r="4"/>
+      <circle cx="307" cy="256" r="4"/>
+      <circle cx="320" cy="262" r="4"/>
+      <circle cx="333" cy="256" r="4"/>
+    </g>
+    <g>
+      <path d="M262 288 l12 6 l12 -6 v-2 h-24 Z" fill="#b8722f"/>
+      <rect x="260" y="288" width="42" height="18" rx="5" fill="#e8a05a"/>
+      <rect x="260" y="288" width="42" height="8" rx="4" fill="#f2bc7f"/>
+    </g>
+  </g>
+  <g fill="#5a4a8a" opacity="0.16">
+    <ellipse cx="88" cy="110" rx="7" ry="9" transform="rotate(-25 88 110)"/>
+    <circle cx="78" cy="97" r="3"/>
+    <circle cx="89" cy="94" r="3"/>
+    <circle cx="99" cy="98" r="3"/>
+    <circle cx="84" cy="88" r="3"/>
+    <ellipse cx="316" cy="150" rx="7" ry="9" transform="rotate(30 316 150)"/>
+    <circle cx="326" cy="138" r="3"/>
+    <circle cx="315" cy="135" r="3"/>
+    <circle cx="305" cy="138" r="3"/>
+    <circle cx="310" cy="146" r="3"/>
+  </g>
+  <path d="M120 150 q12 9 0 18 q-12 -9 0 -18" fill="#b8722f" opacity="0.5"/>
+  <path d="M300 118 q12 9 0 18 q-12 -9 0 -18" fill="#b8722f" opacity="0.5"/>
 </svg>

@@ -1,0 +1,11 @@
+# Keep the Docker image lean - don't copy build artifacts or junk
+.git
+backend/target/
+# Local MySQL credentials - never bake them into the image
+backend/src/main/resources/db.properties
+*.log
+node_modules
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+README.md

@@ -1,8 +1,14 @@
 package com.fazzimart.dao;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,186 +16,172 @@ import org.springframework.stereotype.Repository;
 
 import com.fazzimart.model.Order;
 import com.fazzimart.model.OrderItem;
-import com.fazzimart.util.ExcelUtil;
+import com.fazzimart.util.DBConnection;
 
 /**
- * DAO for orders.xlsx + order_items.xlsx.
+ * DAO for the MySQL {@code orders} and {@code order_items} tables
+ * (same pattern as DhanyaMart's DAOs).
  *
- * orders.xlsx columns:
- *   order_id | user_id | total_amount | order_date | status
- *   | customer_name | phone | address | city | postal_code
+ * orders columns:   id | user_id | total_amount | order_date | status
+ *                   | customer_name | phone | address | city | postal_code
  *
- * order_items.xlsx columns:
- *   order_item_id | order_id | product_id | product_name | quantity | price
+ * order_items columns: id | order_id | product_id | product_name | quantity | price
+ *
+ * {@code save()} is designed to run inside an explicit DB transaction
+ * (see {@link com.fazzimart.service.OrderService}) and re-uses the thread-
+ * local connection when one is open.
  */
 @Repository
 public class OrderDao {
 
-    public static final String[] ORDER_HEADERS = {
-            "order_id", "user_id", "total_amount", "order_date", "status",
-            "customer_name", "phone", "address", "city", "postal_code"
-    };
+    private static final String ORDER_COLUMNS =
+            "id, user_id, total_amount, order_date, status, "
+                    + "customer_name, phone, address, city, postal_code";
 
-    public static final String[] ITEM_HEADERS = {
-            "order_item_id", "order_id", "product_id", "product_name", "quantity", "price"
-    };
+    private static final String ITEM_COLUMNS =
+            "id, order_id, product_id, product_name, quantity, price";
 
-    private static final int OC_ID = 0;
-    private static final int OC_USER_ID = 1;
-    private static final int OC_TOTAL = 2;
-    private static final int OC_DATE = 3;
-    private static final int OC_STATUS = 4;
-    private static final int OC_NAME = 5;
-    private static final int OC_PHONE = 6;
-    private static final int OC_ADDRESS = 7;
-    private static final int OC_CITY = 8;
-    private static final int OC_POSTAL = 9;
-
-    private static final int IC_ID = 0;
-    private static final int IC_ORDER_ID = 1;
-    private static final int IC_PRODUCT_ID = 2;
-    private static final int IC_PRODUCT_NAME = 3;
-    private static final int IC_QUANTITY = 4;
-    private static final int IC_PRICE = 5;
-
-    private File ordersFile() {
-        return ExcelUtil.dataFile("orders.xlsx");
-    }
-
-    private File itemsFile() {
-        return ExcelUtil.dataFile("order_items.xlsx");
-    }
-
-    /** Appends the order and all its items. Caller must hold ExcelUtil.LOCK. */
+    /**
+     * Inserts the order and all its items. The generated order id is set on
+     * the Order object and propagated to each OrderItem. When called from a
+     * transaction the thread-local connection is reused so both inserts are
+     * atomic.
+     */
     public Order save(Order order) {
-        try {
-            List<String[]> orders = ExcelUtil.readRows(ordersFile(), "orders", ORDER_HEADERS);
-            long orderId = ExcelUtil.nextId(orders, OC_ID, 1);
+        String orderSql = "INSERT INTO orders (user_id, total_amount, order_date, status, "
+                + "customer_name, phone, address, city, postal_code) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            String[] oRow = new String[ORDER_HEADERS.length];
-            oRow[OC_ID] = String.valueOf(orderId);
-            oRow[OC_USER_ID] = String.valueOf(order.getUserId());
-            oRow[OC_TOTAL] = order.getTotalAmount() == null ? "0" : order.getTotalAmount().toPlainString();
-            oRow[OC_DATE] = ExcelUtil.format(order.getOrderDate() == null
-                    ? java.time.LocalDateTime.now() : order.getOrderDate());
-            oRow[OC_STATUS] = order.getStatus();
-            oRow[OC_NAME] = order.getCustomerName();
-            oRow[OC_PHONE] = order.getPhone();
-            oRow[OC_ADDRESS] = order.getAddress();
-            oRow[OC_CITY] = order.getCity();
-            oRow[OC_POSTAL] = order.getPostalCode();
-            orders.add(oRow);
-            ExcelUtil.writeRows(ordersFile(), "orders", ORDER_HEADERS, orders);
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(orderSql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setLong(1, order.getUserId());
+            ps.setBigDecimal(2, order.getTotalAmount());
+            ps.setTimestamp(3, Timestamp.valueOf(
+                    order.getOrderDate() == null ? LocalDateTime.now() : order.getOrderDate()));
+            ps.setString(4, order.getStatus());
+            ps.setString(5, order.getCustomerName());
+            ps.setString(6, order.getPhone());
+            ps.setString(7, order.getAddress());
+            ps.setString(8, order.getCity());
+            ps.setString(9, order.getPostalCode());
+            ps.executeUpdate();
 
-            List<String[]> items = ExcelUtil.readRows(itemsFile(), "order_items", ITEM_HEADERS);
-            long itemId = ExcelUtil.nextId(items, IC_ID, 1);
-            for (OrderItem item : order.getItems()) {
-                String[] iRow = new String[ITEM_HEADERS.length];
-                iRow[IC_ID] = String.valueOf(itemId++);
-                iRow[IC_ORDER_ID] = String.valueOf(orderId);
-                iRow[IC_PRODUCT_ID] = String.valueOf(item.getProductId());
-                iRow[IC_PRODUCT_NAME] = item.getProductName();
-                iRow[IC_QUANTITY] = String.valueOf(item.getQuantity());
-                iRow[IC_PRICE] = item.getPrice() == null ? "0" : item.getPrice().toPlainString();
-                items.add(iRow);
+            long orderId;
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (!keys.next()) {
+                    throw new SQLException("Failed to get generated order id");
+                }
+                orderId = keys.getLong(1);
             }
-            ExcelUtil.writeRows(itemsFile(), "order_items", ITEM_HEADERS, items);
-
             order.setId(orderId);
-            order.getItems().forEach(i -> i.setOrderId(orderId));
+
+            // insert order items
+            String itemSql = "INSERT INTO order_items (order_id, product_id, product_name, quantity, price) "
+                    + "VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement ips = conn.prepareStatement(itemSql, Statement.RETURN_GENERATED_KEYS)) {
+                for (OrderItem item : order.getItems()) {
+                    item.setOrderId(orderId);
+                    ips.setLong(1, orderId);
+                    if (item.getProductId() != null) {
+                        ips.setLong(2, item.getProductId());
+                    } else {
+                        ips.setNull(2, Types.BIGINT);
+                    }
+                    ips.setString(3, item.getProductName());
+                    ips.setInt(4, item.getQuantity());
+                    ips.setBigDecimal(5, item.getPrice());
+                    ips.addBatch();
+                }
+                ips.executeBatch();
+
+                // set generated item ids on each item
+                try (ResultSet keys = ips.getGeneratedKeys()) {
+                    int idx = 0;
+                    while (keys.next() && idx < order.getItems().size()) {
+                        order.getItems().get(idx).setId(keys.getLong(1));
+                        idx++;
+                    }
+                }
+            }
             return order;
-        } catch (IOException e) {
-            throw new RuntimeException("Could not write orders.xlsx", e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not insert order into MySQL", e);
         }
     }
 
+    /** Returns all orders for one user (newest first). */
     public List<Order> findByUserId(Long userId) {
-        synchronized (ExcelUtil.LOCK) {
-            try {
-                List<String[]> orders = ExcelUtil.readRows(ordersFile(), "orders", ORDER_HEADERS);
-                List<Order> result = new ArrayList<>();
-                for (String[] row : orders) {
-                    if (row[OC_USER_ID].trim().equals(String.valueOf(userId))) {
-                        result.add(toOrder(row, itemsFor(Long.parseLong(row[OC_ID].trim()))));
-                    }
+        List<Order> result = new ArrayList<>();
+        String sql = "SELECT " + ORDER_COLUMNS + " FROM orders WHERE user_id = ? ORDER BY id DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    long orderId = rs.getLong("id");
+                    List<OrderItem> items = itemsFor(conn, orderId);
+                    result.add(toOrder(rs, items));
                 }
-                return result;
-            } catch (IOException e) {
-                throw new RuntimeException("Could not read orders.xlsx", e);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not read orders from MySQL", e);
         }
+        return result;
     }
 
+    /** Returns one order if it belongs to the given user, else null. */
     public Order findByIdAndUserId(Long orderId, Long userId) {
-        synchronized (ExcelUtil.LOCK) {
-            try {
-                for (String[] row : ExcelUtil.readRows(ordersFile(), "orders", ORDER_HEADERS)) {
-                    if (row[OC_ID].trim().equals(String.valueOf(orderId))
-                            && row[OC_USER_ID].trim().equals(String.valueOf(userId))) {
-                        return toOrder(row, itemsFor(orderId));
-                    }
+        String sql = "SELECT " + ORDER_COLUMNS + " FROM orders WHERE id = ? AND user_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, orderId);
+            ps.setLong(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return toOrder(rs, itemsFor(conn, orderId));
                 }
-            } catch (IOException e) {
-                throw new RuntimeException("Could not read orders.xlsx", e);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not read order from MySQL", e);
         }
         return null;
     }
 
-    private List<OrderItem> itemsFor(Long orderId) throws IOException {
-        List<String[]> items = ExcelUtil.readRows(itemsFile(), "order_items", ITEM_HEADERS);
+    /** Loads all items belonging to one order id. */
+    private List<OrderItem> itemsFor(Connection conn, long orderId) throws SQLException {
         List<OrderItem> result = new ArrayList<>();
-        for (String[] row : items) {
-            if (row[IC_ORDER_ID].trim().equals(String.valueOf(orderId))) {
-                result.add(new OrderItem(
-                        parseLong(row[IC_ID]),
-                        orderId,
-                        parseLong(row[IC_PRODUCT_ID]),
-                        row[IC_PRODUCT_NAME],
-                        parseInt(row[IC_QUANTITY]),
-                        parseDecimal(row[IC_PRICE])));
+        String sql = "SELECT " + ITEM_COLUMNS + " FROM order_items WHERE order_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.add(new OrderItem(
+                            rs.getLong("id"),
+                            orderId,
+                            rs.getObject("product_id", Long.class),
+                            rs.getString("product_name"),
+                            rs.getInt("quantity"),
+                            rs.getBigDecimal("price")));
+                }
             }
         }
         return result;
     }
 
-    private Order toOrder(String[] row, List<OrderItem> items) {
+    private Order toOrder(ResultSet rs, List<OrderItem> items) throws SQLException {
         Order order = new Order();
-        order.setId(parseLong(row[OC_ID]));
-        order.setUserId(parseLong(row[OC_USER_ID]));
-        order.setTotalAmount(parseDecimal(row[OC_TOTAL]));
-        order.setOrderDate(ExcelUtil.parse(row[OC_DATE]));
-        order.setStatus(row[OC_STATUS]);
-        order.setCustomerName(row[OC_NAME]);
-        order.setPhone(row[OC_PHONE]);
-        order.setAddress(row[OC_ADDRESS]);
-        order.setCity(row[OC_CITY]);
-        order.setPostalCode(row[OC_POSTAL]);
+        order.setId(rs.getLong("id"));
+        order.setUserId(rs.getLong("user_id"));
+        order.setTotalAmount(rs.getBigDecimal("total_amount"));
+        Timestamp orderDate = rs.getTimestamp("order_date");
+        order.setOrderDate(orderDate == null ? null : orderDate.toLocalDateTime());
+        order.setStatus(rs.getString("status"));
+        order.setCustomerName(rs.getString("customer_name"));
+        order.setPhone(rs.getString("phone"));
+        order.setAddress(rs.getString("address"));
+        order.setCity(rs.getString("city"));
+        order.setPostalCode(rs.getString("postal_code"));
         order.setItems(items);
         return order;
-    }
-
-    private BigDecimal parseDecimal(String value) {
-        try {
-            return new BigDecimal(value.trim());
-        } catch (Exception e) {
-            return BigDecimal.ZERO;
-        }
-    }
-
-    private Long parseLong(String value) {
-        try {
-            return Long.parseLong(value.trim());
-        } catch (Exception e) {
-            return 0L;
-        }
-    }
-
-    private Integer parseInt(String value) {
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (Exception e) {
-            return 0;
-        }
     }
 }

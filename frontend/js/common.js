@@ -3,7 +3,8 @@
    Load this file on every page BEFORE the page script.
    ============================================================ */
 
-const API_BASE = 'http://localhost:9090/api';
+// Same-origin when served by the backend (:9090), standalone fallback otherwise
+const API_BASE = window.location.port === '9090' ? '/api' : 'http://localhost:9090/api';
 
 const TOKEN_KEY = 'fazzi_token';
 const USER_KEY = 'fazzi_user';

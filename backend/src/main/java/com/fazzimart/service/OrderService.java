@@ -1,6 +1,7 @@
 package com.fazzimart.service;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,7 +19,7 @@ import com.fazzimart.model.Order;
 import com.fazzimart.model.OrderItem;
 import com.fazzimart.model.Product;
 import com.fazzimart.model.User;
-import com.fazzimart.util.ExcelUtil;
+import com.fazzimart.util.DBConnection;
 
 @Service
 public class OrderService {
@@ -34,10 +35,18 @@ public class OrderService {
     }
 
     public OrderDTO placeOrder(User user, CheckoutRequest request) {
-        // The whole order is one "transaction": stock check, order write,
-        // stock decrement and cart clear all happen while the Excel files
-        // are locked so no two requests can interleave.
-        synchronized (ExcelUtil.LOCK) {
+        // The whole order is one MySQL transaction: stock checks, the order
+        // write, stock decrements and the cart clear all share a single
+        // connection (see DBConnection.beginTransaction / commitTransaction),
+        // so no two requests can interleave and a failure rolls everything back.
+        try {
+            DBConnection.beginTransaction();
+        } catch (java.sql.SQLException e) {
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Could not start database transaction: " + e.getMessage());
+        }
+
+        try {
             List<CartItem> cartItems = cartDao.findByUserId(user.getId());
             if (cartItems.isEmpty()) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Your cart is empty");
@@ -84,7 +93,24 @@ public class OrderService {
 
             cartDao.clear(user.getId());
 
+            DBConnection.commitTransaction();
             return OrderDTO.from(saved);
+        } catch (ApiException e) {
+            rollbackQuietly();
+            throw e;
+        } catch (Exception e) {
+            rollbackQuietly();
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Could not place your order. " + e.getMessage());
+        }
+    }
+
+    /** Closes the current transaction by rolling back (never throws to the caller). */
+    private void rollbackQuietly() {
+        try {
+            DBConnection.rollbackTransaction();
+        } catch (SQLException ignored) {
+            // nothing sensible to do - the original error is what matters
         }
     }
 

@@ -1,0 +1,42 @@
+# FazziMart full stack - MySQL 8 + app in one command.
+#
+#   docker compose up --build
+#   open http://localhost:9090   (admin@fazzimart.com / Admin@123)
+#
+# The app's DB connection is provided via env vars (highest priority in
+# DBConnection.java), so no db.properties is needed inside the containers.
+services:
+  db:
+    image: mysql:8
+    container_name: fazzimart-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: fazzimart_root
+      MYSQL_DATABASE: fazzimart
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pfazzimart_root"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  app:
+    build: .
+    container_name: fazzimart-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://db:3306/fazzimart?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+      DB_USER: root
+      DB_PASSWORD: fazzimart_root
+      PORT: "9090"
+    ports:
+      - "9090:9090"
+
+volumes:
+  mysql-data:

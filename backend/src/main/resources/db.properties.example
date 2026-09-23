@@ -1,0 +1,14 @@
+# FAZZI MART - MySQL connection settings (local development)
+#
+#  1. Copy this file to  db.properties  (same folder)  <-- db.properties is
+#     git-ignored so your real password is never committed.
+#  2. Fill in your MySQL 8 username / password below.
+#  3. Restart the backend.
+#
+# NOTE: on servers (Docker/Render/etc.) these values are overridden by the
+# environment variables  DB_URL / DB_USER / DB_PASSWORD  (highest priority),
+# so you don't even need this file there.
+
+db.url=jdbc:mysql://localhost:3306/fazzimart?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+db.user=root
+db.password=CHANGE_ME

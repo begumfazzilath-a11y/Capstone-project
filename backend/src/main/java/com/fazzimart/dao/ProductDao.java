@@ -1,52 +1,43 @@
 package com.fazzimart.dao;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
 import com.fazzimart.model.Product;
-import com.fazzimart.util.ExcelUtil;
+import com.fazzimart.util.DBConnection;
 
 /**
- * DAO for products.xlsx.
+ * DAO for the MySQL {@code products} table (same pattern as DhanyaMart's ProductDAO).
+ * All SQL uses prepared statements and MySQL's {@code products.id}
+ * auto-increment column generates the ids.
+ *
  * Columns: id | name | description | category | price | image_url | stock | rating
  */
 @Repository
 public class ProductDao {
 
-    public static final String[] HEADERS = {
-            "id", "name", "description", "category", "price", "image_url", "stock", "rating"
-    };
-
-    private static final int COL_ID = 0;
-    private static final int COL_NAME = 1;
-    private static final int COL_DESCRIPTION = 2;
-    private static final int COL_CATEGORY = 3;
-    private static final int COL_PRICE = 4;
-    private static final int COL_IMAGE = 5;
-    private static final int COL_STOCK = 6;
-    private static final int COL_RATING = 7;
-
-    private File file() {
-        return ExcelUtil.dataFile("products.xlsx");
-    }
+    private static final String COLUMNS =
+            "id, name, description, category, price, image_url, stock, rating";
 
     public List<Product> findAll() {
-        synchronized (ExcelUtil.LOCK) {
-            try {
-                List<String[]> rows = ExcelUtil.readRows(file(), "products", HEADERS);
-                List<Product> products = new ArrayList<>();
-                for (String[] row : rows) {
-                    products.add(toProduct(row));
-                }
-                return products;
-            } catch (IOException e) {
-                throw new RuntimeException("Could not read products.xlsx", e);
+        List<Product> products = new ArrayList<>();
+        String sql = "SELECT " + COLUMNS + " FROM products ORDER BY id";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                products.add(toProduct(rs));
             }
+            return products;
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not read products from MySQL", e);
         }
     }
 
@@ -54,142 +45,127 @@ public class ProductDao {
         if (id == null) {
             return null;
         }
-        for (Product p : findAll()) {
-            if (p.getId().equals(id)) {
-                return p;
+        String sql = "SELECT " + COLUMNS + " FROM products WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return toProduct(rs);
+                }
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not read product by id from MySQL", e);
         }
         return null;
     }
 
+    /** Returns true when a product with the same name (case-insensitive) exists. */
     public boolean existsByName(String name) {
-        for (Product p : findAll()) {
-            if (p.getName().equalsIgnoreCase(name)) {
-                return true;
+        String sql = "SELECT COUNT(*) FROM products WHERE LOWER(name) = LOWER(?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getLong(1) > 0;
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not check product name in MySQL", e);
         }
-        return false;
     }
 
     public long count() {
-        synchronized (ExcelUtil.LOCK) {
-            try {
-                return ExcelUtil.readRows(file(), "products", HEADERS).size();
-            } catch (IOException e) {
-                throw new RuntimeException("Could not read products.xlsx", e);
+        String sql = "SELECT COUNT(*) FROM products";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getLong(1);
             }
+            return 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not count products in MySQL", e);
         }
     }
 
-    /** Appends a new product row and assigns the next id. */
+    /** Inserts a new product row and assigns the generated id. */
     public Product save(Product product) {
-        synchronized (ExcelUtil.LOCK) {
-            try {
-                List<String[]> rows = ExcelUtil.readRows(file(), "products", HEADERS);
-                long id = ExcelUtil.nextId(rows, COL_ID, 1);
-                rows.add(toRow(product, id));
-                ExcelUtil.writeRows(file(), "products", HEADERS, rows);
-                product.setId(id);
-                return product;
-            } catch (IOException e) {
-                throw new RuntimeException("Could not write products.xlsx", e);
-            }
-        }
-    }
-
-    /** Replaces the row with the same id. */
-    public Product update(Product product) {
-        synchronized (ExcelUtil.LOCK) {
-            try {
-                List<String[]> rows = ExcelUtil.readRows(file(), "products", HEADERS);
-                for (int i = 0; i < rows.size(); i++) {
-                    if (rows.get(i)[COL_ID].trim().equals(String.valueOf(product.getId()))) {
-                        rows.set(i, toRow(product, product.getId()));
-                        break;
-                    }
+        String sql = "INSERT INTO products (name, description, category, price, image_url, stock, rating) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, product.getName());
+            ps.setString(2, product.getDescription());
+            ps.setString(3, product.getCategory());
+            ps.setBigDecimal(4, product.getPrice());
+            ps.setString(5, product.getImageUrl());
+            ps.setInt(6, product.getStock() == null ? 0 : product.getStock());
+            ps.setBigDecimal(7, product.getRating() == null ? new BigDecimal("4.5") : product.getRating());
+            ps.executeUpdate();
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    product.setId(keys.getLong(1));
                 }
-                ExcelUtil.writeRows(file(), "products", HEADERS, rows);
-                return product;
-            } catch (IOException e) {
-                throw new RuntimeException("Could not write products.xlsx", e);
             }
+            return product;
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not insert product into MySQL", e);
         }
     }
 
+    /** Updates the product row with the same id. */
+    public Product update(Product product) {
+        String sql = "UPDATE products SET name = ?, description = ?, category = ?, price = ?, "
+                + "image_url = ?, stock = ?, rating = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, product.getName());
+            ps.setString(2, product.getDescription());
+            ps.setString(3, product.getCategory());
+            ps.setBigDecimal(4, product.getPrice());
+            ps.setString(5, product.getImageUrl());
+            ps.setInt(6, product.getStock() == null ? 0 : product.getStock());
+            ps.setBigDecimal(7, product.getRating() == null ? new BigDecimal("4.5") : product.getRating());
+            ps.setLong(8, product.getId());
+            ps.executeUpdate();
+            return product;
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not update product in MySQL", e);
+        }
+    }
+
+    /**
+     * Deletes a product row. Rows in {@code cart_items} are removed by the
+     * FK CASCADE, past {@code order_items} keep their snapshot (product_id set
+     * to NULL by the FK action).
+     */
     public void delete(Long id) {
-        synchronized (ExcelUtil.LOCK) {
-            try {
-                List<String[]> rows = ExcelUtil.readRows(file(), "products", HEADERS);
-                rows.removeIf(row -> row[COL_ID].trim().equals(String.valueOf(id)));
-                ExcelUtil.writeRows(file(), "products", HEADERS, rows);
-            } catch (IOException e) {
-                throw new RuntimeException("Could not write products.xlsx", e);
-            }
+        String sql = "DELETE FROM products WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not delete product in MySQL", e);
         }
     }
 
     /** Used by the seeder to add the initial catalogue. */
     public void seed(List<Product> products) {
-        synchronized (ExcelUtil.LOCK) {
-            try {
-                List<String[]> rows = ExcelUtil.readRows(file(), "products", HEADERS);
-                long id = ExcelUtil.nextId(rows, COL_ID, 1);
-                for (Product p : products) {
-                    rows.add(toRow(p, id++));
-                }
-                ExcelUtil.writeRows(file(), "products", HEADERS, rows);
-            } catch (IOException e) {
-                throw new RuntimeException("Could not write products.xlsx", e);
-            }
+        for (Product product : products) {
+            save(product);
         }
     }
 
-    private Product toProduct(String[] row) {
+    private Product toProduct(ResultSet rs) throws SQLException {
         return new Product(
-                parseLong(row[COL_ID]),
-                row[COL_NAME],
-                row[COL_DESCRIPTION],
-                row[COL_CATEGORY],
-                parseDecimal(row[COL_PRICE]),
-                row[COL_IMAGE],
-                parseInt(row[COL_STOCK]),
-                parseDecimal(row[COL_RATING]));
-    }
-
-    private String[] toRow(Product p, long id) {
-        String[] row = new String[HEADERS.length];
-        row[COL_ID] = String.valueOf(id);
-        row[COL_NAME] = p.getName();
-        row[COL_DESCRIPTION] = p.getDescription();
-        row[COL_CATEGORY] = p.getCategory();
-        row[COL_PRICE] = p.getPrice() == null ? "0" : p.getPrice().toPlainString();
-        row[COL_IMAGE] = p.getImageUrl();
-        row[COL_STOCK] = String.valueOf(p.getStock() == null ? 0 : p.getStock());
-        row[COL_RATING] = p.getRating() == null ? "4.5" : p.getRating().toPlainString();
-        return row;
-    }
-
-    private BigDecimal parseDecimal(String value) {
-        try {
-            return new BigDecimal(value.trim());
-        } catch (Exception e) {
-            return BigDecimal.ZERO;
-        }
-    }
-
-    private Long parseLong(String value) {
-        try {
-            return Long.parseLong(value.trim());
-        } catch (Exception e) {
-            return 0L;
-        }
-    }
-
-    private Integer parseInt(String value) {
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (Exception e) {
-            return 0;
-        }
+                rs.getLong("id"),
+                rs.getString("name"),
+                rs.getString("description"),
+                rs.getString("category"),
+                rs.getBigDecimal("price"),
+                rs.getString("image_url"),
+                rs.getInt("stock"),
+                rs.getBigDecimal("rating"));
     }
 }

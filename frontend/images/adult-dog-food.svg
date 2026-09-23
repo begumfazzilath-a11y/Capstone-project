@@ -1,7 +1,52 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9966"/><stop offset="1" stop-color="#ff5e62"/></linearGradient></defs>
-  <rect width="400" height="400" fill="url(#g)"/>
-  <circle cx="200" cy="180" r="110" fill="rgba(255,255,255,0.18)"/>
-  <text x="200" y="215" font-size="130" text-anchor="middle" dominant-baseline="central">🦴</text>
-  <text x="200" y="345" font-size="28" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-weight="bold">Adult Dog Food</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbeedd"/>
+      <stop offset="1" stop-color="#ecd0ae"/>
+    </linearGradient>
+    <linearGradient id="bag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8d5b2e"/>
+      <stop offset="1" stop-color="#5e3817"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <rect x="44" y="44" width="312" height="312" rx="34" fill="#ffffff" opacity="0.5"/>
+  <ellipse cx="210" cy="330" rx="118" ry="18" fill="#3c210c" opacity="0.22"/>
+  <g>
+    <path d="M118 332 L118 178 C118 166 128 158 140 158 L260 158 C272 158 282 166 282 178 L282 332 C282 338 277 340 271 340 L129 340 C123 340 118 338 118 332 Z" fill="url(#bag)"/>
+    <path d="M140 158 L200 126 L260 158 Z" fill="#40220c"/>
+    <line x1="200" y1="126" x2="200" y2="158" stroke="#5e3817" stroke-width="3"/>
+    <rect x="170" y="184" width="60" height="100" rx="12" fill="#fbf1e2"/>
+    <circle cx="200" cy="208" r="17" fill="#7a4a22"/>
+    <ellipse cx="186" cy="208" rx="10" ry="21" transform="rotate(-18 186 208)" fill="#a06a33"/>
+    <ellipse cx="214" cy="208" rx="10" ry="21" transform="rotate(18 214 208)" fill="#a06a33"/>
+    <ellipse cx="200" cy="219" rx="11" ry="8" fill="#8a5a2c"/>
+    <circle cx="194" cy="206" r="2.4" fill="#2a1607"/>
+    <circle cx="206" cy="206" r="2.4" fill="#2a1607"/>
+    <path d="M200 221 q4 4 0 8 q-4 -4 0 -8" fill="#4a2c12"/>
+    <circle cx="200" cy="227" r="3.2" fill="#241407"/>
+    <text x="200" y="268" font-size="13" font-family="Arial, sans-serif" font-weight="bold" fill="#5e3817" text-anchor="middle">BEEF</text>
+    <text x="200" y="283" font-size="13" font-family="Arial, sans-serif" font-weight="bold" fill="#5e3817" text-anchor="middle">RECIPE</text>
+  </g>
+  <g transform="translate(120 258)">
+    <path d="M0 0 h52 c4 0 8 4 8 8 v6 c0 7 -4 10 -8 10 h-6 l-10 10 l-6 -10 h-30 c-5 0 -8 -4 -8 -10 v-6 c0 -4 3 -8 8 -8 Z" fill="#b6423a"/>
+    <path d="M12 4 h22 c2 0 4 2 4 4 s-2 4 -4 4 h-22 v-4" fill="#f4d9c6"/>
+    <path d="M46 4 c4 0 6 2 6 5 c0 4 -3 6 -6 6 c-4 0 -6 -2 -5 -6 c0 -3 2 -5 5 -5 Z" fill="#e8edf2"/>
+  </g>
+  <g fill="#5e3817" opacity="0.16">
+    <ellipse cx="90" cy="120" rx="7" ry="9" transform="rotate(-25 90 120)"/>
+    <circle cx="80" cy="107" r="3"/>
+    <circle cx="91" cy="104" r="3"/>
+    <circle cx="101" cy="108" r="3"/>
+    <circle cx="86" cy="98" r="3"/>
+    <ellipse cx="314" cy="116" rx="7" ry="9" transform="rotate(30 314 116)"/>
+    <circle cx="324" cy="104" r="3"/>
+    <circle cx="313" cy="101" r="3"/>
+    <circle cx="303" cy="104" r="3"/>
+    <circle cx="308" cy="112" r="3"/>
+  </g>
+  <circle cx="84" cy="196" r="5" fill="#e8a45b" opacity="0.55"/>
+  <circle cx="96" cy="208" r="3" fill="#e8a45b" opacity="0.55"/>
+  <circle cx="316" cy="196" r="5" fill="#e8a45b" opacity="0.55"/>
+  <circle cx="304" cy="208" r="3" fill="#e8a45b" opacity="0.55"/>
 </svg>

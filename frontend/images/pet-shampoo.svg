@@ -1,7 +1,50 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#36d1dc"/><stop offset="1" stop-color="#5b86e5"/></linearGradient></defs>
-  <rect width="400" height="400" fill="url(#g)"/>
-  <circle cx="200" cy="180" r="110" fill="rgba(255,255,255,0.18)"/>
-  <text x="200" y="215" font-size="130" text-anchor="middle" dominant-baseline="central">🧴</text>
-  <text x="200" y="345" font-size="28" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-weight="bold">Pet Shampoo</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e6f9f6"/>
+      <stop offset="1" stop-color="#b4e8e0"/>
+    </linearGradient>
+    <linearGradient id="bot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3fc6b5"/>
+      <stop offset="1" stop-color="#1c9c8c"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <rect x="44" y="44" width="312" height="312" rx="34" fill="#ffffff" opacity="0.5"/>
+  <ellipse cx="210" cy="334" rx="110" ry="16" fill="#0f6b5e" opacity="0.2"/>
+  <g>
+    <path d="M176 128 h48 v26 l-48 4 Z" fill="#1c9c8c"/>
+    <rect x="172" y="120" width="56" height="14" rx="7" fill="#17b2a0"/>
+    <rect x="196" y="96" width="8" height="24" rx="4" fill="#2c3e50"/>
+    <circle cx="200" cy="110" r="3.4" fill="#ffb37e"/>
+    <path d="M158 340 L158 158 C158 146 168 138 180 138 L220 138 C232 138 242 146 242 158 L242 340 C242 346 237 348 231 348 L169 348 C163 348 158 346 158 340 Z" fill="url(#bot)"/>
+    <rect x="166" y="180" width="68" height="86" rx="12" fill="#f0fffc"/>
+    <path d="M200 200 q10 12 0 24 q-10 -12 0 -24" fill="#3fc6b5"/>
+    <path d="M182 228 Q200 214 218 228 Q200 244 182 228 Z" fill="#1c9c8c"/>
+    <text x="200" y="252" font-size="13" font-family="Arial, sans-serif" font-weight="bold" fill="#12796c" text-anchor="middle">SHAMPOO</text>
+    <text x="200" y="294" font-size="14" font-family="Arial, sans-serif" font-weight="bold" fill="#0c5c52" text-anchor="middle">ANTI-DANDRUFF</text>
+  </g>
+  <g fill="#1c9c8c" opacity="0.5">
+    <circle cx="96" cy="176" r="7"/>
+    <circle cx="82" cy="160" r="4.5"/>
+    <circle cx="110" cy="152" r="4.5"/>
+    <circle cx="120" cy="128" r="4.5"/>
+    <circle cx="100" cy="112" r="4.5"/>
+    <circle cx="309" cy="246" r="7"/>
+    <circle cx="295" cy="232" r="4.5"/>
+    <circle cx="315" cy="214" r="4.5"/>
+    <circle cx="300" cy="190" r="4.5"/>
+    <circle cx="312" cy="170" r="4.5"/>
+  </g>
+  <g>
+    <circle cx="92" cy="260" r="9" fill="#ffffff" opacity="0.75"/>
+    <path d="M88 260 a4 4 0 0 1 8 0 l-4 12 Z" fill="#eafaf7" opacity="0.95"/>
+  </g>
+  <g fill="#0f6b5e" opacity="0.16">
+    <ellipse cx="312" cy="120" rx="7" ry="9" transform="rotate(30 312 120)"/>
+    <circle cx="322" cy="108" r="3"/>
+    <circle cx="311" cy="105" r="3"/>
+    <circle cx="301" cy="108" r="3"/>
+    <circle cx="306" cy="116" r="3"/>
+  </g>
 </svg>

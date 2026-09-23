@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "caches": {
+    "maven": {
+      "directory": "/root/.m2/repository",
+      "type": "shared"
+    }
+  },
+  "steps": {
+    "build": {
+      "inputs": [
+        { "image": "maven:3.9-eclipse-temurin-17" },
+        { "local": true, "include": ["."] }
+      ],
+      "caches": ["maven"],
+      "commands": [
+        {
+          "cmd": "mvn -q -B -f backend/pom.xml clean package -DskipTests",
+          "customName": "Build FazziMart backend JAR"
+        }
+      ]
+    }
+  },
+  "deploy": {
+    "base": { "image": "eclipse-temurin:17-jre" },
+    "inputs": [
+      {
+        "step": "build",
+        "include": ["backend/target/fazzi-mart-backend-1.0.0.jar"]
+      }
+    ],
+    "startCommand": "java -jar /app/backend/target/fazzi-mart-backend-1.0.0.jar --server.port=${PORT:-9090}"
+  }
+}

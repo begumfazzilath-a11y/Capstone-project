@@ -1,7 +1,46 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#11998e"/><stop offset="1" stop-color="#38ef7d"/></linearGradient></defs>
-  <rect width="400" height="400" fill="url(#g)"/>
-  <circle cx="200" cy="180" r="110" fill="rgba(255,255,255,0.18)"/>
-  <text x="200" y="215" font-size="130" text-anchor="middle" dominant-baseline="central">🦆</text>
-  <text x="200" y="345" font-size="28" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-weight="bold">Squeaky Duck Toy</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffbe6"/>
+      <stop offset="1" stop-color="#ffe07a"/>
+    </linearGradient>
+    <radialGradient id="duckbg" cx="0.4" cy="0.3" r="1">
+      <stop offset="0" stop-color="#ffd84d"/>
+      <stop offset="1" stop-color="#f2b400"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <rect x="44" y="44" width="312" height="312" rx="34" fill="#ffffff" opacity="0.5"/>
+  <ellipse cx="204" cy="330" rx="104" ry="15" fill="#b8860b" opacity="0.2"/>
+  <g>
+    <ellipse cx="204" cy="290" rx="92" ry="44" fill="url(#duckbg)"/>
+    <circle cx="164" cy="180" r="52" fill="url(#duckbg)"/>
+    <ellipse cx="204" cy="278" rx="60" ry="16" fill="#ffffff" opacity="0.7"/>
+    <g transform="translate(146 158)">
+      <path d="M14 6 q-22 -16 4 -22 q4 14 -10 16 Z" fill="#ff8d1e"/>
+      <path d="M-4 -4 q-8 -20 10 -18 q-2 14 -12 12 Z" fill="#f2b400"/>
+    </g>
+    <ellipse cx="128" cy="150" rx="14" ry="18" transform="rotate(-18 128 150)" fill="#fff6d0"/>
+    <circle cx="122" cy="148" r="3.4" fill="#5c3a12"/>
+    <ellipse cx="150" cy="146" rx="9" ry="6" fill="#ff8d1e"/>
+    <path d="M204 170 q110 10 96 96 q-100 34 -140 -20 Z" fill="#f6cd4d" opacity="0.9"/>
+    <path d="M204 170 q-110 10 -96 96 q100 34 140 -20 Z" fill="#f6cd4d" opacity="0.7"/>
+  </g>
+  <g>
+    <circle cx="252" cy="276" r="26" fill="#ff8d1e"/>
+    <circle cx="252" cy="276" r="16" fill="#f2b400"/>
+    <circle cx="252" cy="276" r="6" fill="#b8860b"/>
+  </g>
+  <g fill="#b8860b" opacity="0.18">
+    <ellipse cx="96" cy="116" rx="7" ry="9" transform="rotate(-25 96 116)"/>
+    <circle cx="86" cy="103" r="3"/>
+    <circle cx="97" cy="100" r="3"/>
+    <circle cx="107" cy="104" r="3"/>
+    <circle cx="92" cy="94" r="3"/>
+    <ellipse cx="314" cy="116" rx="7" ry="9" transform="rotate(30 314 116)"/>
+    <circle cx="324" cy="104" r="3"/>
+    <circle cx="313" cy="101" r="3"/>
+    <circle cx="303" cy="104" r="3"/>
+    <circle cx="308" cy="112" r="3"/>
+  </g>
 </svg>

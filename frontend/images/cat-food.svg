@@ -1,7 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9966"/><stop offset="1" stop-color="#ff5e62"/></linearGradient></defs>
-  <rect width="400" height="400" fill="url(#g)"/>
-  <circle cx="200" cy="180" r="110" fill="rgba(255,255,255,0.18)"/>
-  <text x="200" y="215" font-size="130" text-anchor="middle" dominant-baseline="central">🐟</text>
-  <text x="200" y="345" font-size="28" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-weight="bold">Deluxe Cat Food</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9f6ff"/>
+      <stop offset="1" stop-color="#bcdcf7"/>
+    </linearGradient>
+    <linearGradient id="bag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3aa7e3"/>
+      <stop offset="1" stop-color="#1c78b8"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <rect x="44" y="44" width="312" height="312" rx="34" fill="#ffffff" opacity="0.5"/>
+  <ellipse cx="210" cy="330" rx="118" ry="18" fill="#135f94" opacity="0.22"/>
+  <g>
+    <path d="M118 332 L118 178 C118 166 128 158 140 158 L260 158 C272 158 282 166 282 178 L282 332 C282 338 277 340 271 340 L129 340 C123 340 118 338 118 332 Z" fill="url(#bag)"/>
+    <path d="M140 158 L200 126 L260 158 Z" fill="#12567f"/>
+    <line x1="200" y1="126" x2="200" y2="158" stroke="#1c78b8" stroke-width="3"/>
+    <rect x="172" y="184" width="56" height="98" rx="12" fill="#f2faff"/>
+    <ellipse cx="200" cy="212" rx="18" ry="20" fill="#4a7fb5"/>
+    <path d="M183 198 l-8 -16 m25 16 l8 -16" stroke="#4a7fb5" stroke-width="5" stroke-linecap="round"/>
+    <polygon points="200,218 218,212 218,228 200,236 182,228 182,212" fill="#f5b3a0"/>
+    <circle cx="192" cy="210" r="2.4" fill="#fff"/>
+    <circle cx="208" cy="210" r="2.4" fill="#fff"/>
+    <path d="M200 218 q5 5 0 9 q-5 -4 0 -9" fill="#fff"/>
+  </g>
+  <g transform="translate(200 292)">
+    <ellipse cx="0" cy="0" rx="26" ry="15" fill="#f5b3a0"/>
+    <path d="M-14 -6 L14 -6 L20 8 L-20 8 Z" fill="#f5b3a0"/>
+    <path d="M-10 -2 L-12 6 M-5 -2 L-6 6 M5 -2 L6 6 M10 -2 L12 6" stroke="#7a4a3a" stroke-width="1.6" stroke-linecap="round"/>
+    <circle cx="10" cy="-7" r="2.4" fill="#3a241a"/>
+  </g>
+  <g fill="#18639b" opacity="0.16">
+    <ellipse cx="318" cy="118" rx="7" ry="9" transform="rotate(30 318 118)"/>
+    <circle cx="328" cy="106" r="3"/>
+    <circle cx="317" cy="103" r="3"/>
+    <circle cx="307" cy="106" r="3"/>
+    <circle cx="312" cy="114" r="3"/>
+    <ellipse cx="86" cy="108" rx="7" ry="9" transform="rotate(-25 86 108)"/>
+    <circle cx="76" cy="96" r="3"/>
+    <circle cx="87" cy="93" r="3"/>
+    <circle cx="97" cy="97" r="3"/>
+    <circle cx="82" cy="87" r="3"/>
+  </g>
+  <path d="M76 172 q14 10 0 20 q-14 -10 0 -20" fill="#ffb37e" opacity="0.55"/>
+  <path d="M306 188 q14 10 0 20 q-14 -10 0 -20" fill="#ffb37e" opacity="0.55"/>
 </svg>

@@ -1,0 +1,30 @@
+# Render.com Blueprint - https://dashboard.render.com/select-repo?type=blueprint
+#
+# How to deploy:
+#   1. Push this repo to GitHub.
+#   2. Render dashboard -> New -> Blueprint instance -> pick the repo.
+#   3. Render builds the Dockerfile and injects a dynamic $PORT (the
+#      entrypoint forwards it to Spring Boot).
+#   4. Provide DB_URL / DB_USER / DB_PASSWORD for your MySQL 8 database
+#      (Render has no managed MySQL, so use e.g. aiven.io free MySQL tier,
+#      Railway, or any MySQL 8 host). Set the values as environment variables
+#      in the Render service dashboard.
+#
+# NOTE: replace the 'repo' URL below with your own repo before importing.
+services:
+  - type: web
+    name: fazzimart
+    runtime: docker
+    repo: https://github.com/your-github-username/fazzi-mart.git
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /index.html
+    autoDeploy: true
+    envVars:
+      - key: DB_URL
+        value: jdbc:mysql://YOUR_MYSQL_HOST:3306/fazzimart?createDatabaseIfNotExist=true&useSSL=true&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+      - key: DB_USER
+        value: root
+      - key: DB_PASSWORD
+        sync: false   # set it in the dashboard

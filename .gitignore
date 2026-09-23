@@ -4,6 +4,10 @@ backend/target/
 *.jar
 !.mvn/wrapper/maven-wrapper.jar
 
+# Local MySQL credentials - never commit the real password.
+# Copy db.properties.example to db.properties for local runs instead.
+backend/src/main/resources/db.properties
+
 # IDE files
 .vscode/
 .idea/
