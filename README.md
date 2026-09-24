@@ -250,12 +250,22 @@ or explicit service using this repo will build with Railpack and serve
 
 ### Option D — Render.com (free)
 
-1. Push this repo to GitHub.
+1. Push this repo to GitHub (origin is already set to
+   `begumfazzilath-a11y/Capstone-project`).
 2. Render dashboard → **New → Blueprint instance** → pick the repo
    (uses `render.yaml` + `Dockerfile`).
-3. Add a MySQL 8 database (Render has no managed MySQL — uses
-   e.g. Aiven free tier, Railway, or Planetscale) and set `DB_URL`,
-   `DB_USER`, `DB_PASSWORD` in the Render service's environment.
+3. Render has no managed MySQL, so use a free MySQL 8 host (e.g. Aiven,
+   Railway, Planetscale) and set these in the service's **Environment**
+   after import (`render.yaml` marks them `sync: false`, so they never get
+   overwritten on redeploys):
+   - `DB_URL` — e.g. `jdbc:mysql://HOST:3306/fazzimart?createDatabaseIfNotExist=true&useSSL=true&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8`
+   - `DB_USER`, `DB_PASSWORD`
+   - `FAZZI_JWT_SECRET` (optional): any long random signing key
+
+> The app boots even if MySQL is still starting up — the seeder retries
+> in the background (idempotent), so the first deploy goes healthy even
+> when the database needs a minute. The frontend calls the API via a
+> relative `/api` path on deployed hosts, so no CORS/port config is needed.
 
 ---
 

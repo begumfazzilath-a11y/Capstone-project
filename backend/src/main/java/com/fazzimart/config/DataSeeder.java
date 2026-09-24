@@ -26,10 +26,48 @@ public class DataSeeder implements CommandLineRunner {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Seeds on a background thread with retries so that a MySQL instance that
+     * is still starting up (Render / Railway / Docker healthcheck race) never
+     * aborts the application boot. Both seed methods are idempotent, so retries
+     * are safe. If the database can never be reached within MAX_ATTEMPTS, the
+     * thread stops trying and logs a clear error - the web app still serves.
+     */
     @Override
     public void run(String... args) {
-        seedAdmin();
-        seedProducts();
+        Thread seeder = new Thread(this::seedWithRetry, "fazzimart-seeder");
+        seeder.setDaemon(true);
+        seeder.start();
+    }
+
+    private void seedWithRetry() {
+        final int maxAttempts = 60;
+        final long retryDelayMs = 5000;
+        for (int attempt = 1; ; attempt++) {
+            try {
+                seedAdmin();
+                seedProducts();
+                return;
+            } catch (RuntimeException e) {
+                if (attempt >= maxAttempts) {
+                    System.err.println("[Seeder] Giving up after " + attempt
+                            + " attempts - is MySQL reachable? Check DB_URL / DB_USER / DB_PASSWORD: "
+                            + e.getMessage());
+                    return;
+                }
+                if (attempt == 1 || attempt % 6 == 0) {
+                    System.err.println("[Seeder] MySQL not ready yet (attempt " + attempt
+                            + "/" + maxAttempts + "), retrying in " + (retryDelayMs / 1000)
+                            + "s: " + e.getMessage());
+                }
+                try {
+                    Thread.sleep(retryDelayMs);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
     }
 
     private void seedAdmin() {
